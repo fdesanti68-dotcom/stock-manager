@@ -44,4 +44,3 @@ jobs:
       with:
         github_token: ${{ secrets.GH_TOKEN }}
         publish_dir: ./dist/stock-manager-v2 # The build output directory
-
