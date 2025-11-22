@@ -1,0 +1,108 @@
+<div class="dashboard-container">
+  <h1>Dashboard</h1>
+
+  <!-- Overall Performance Card -->
+  <mat-card *ngIf="overallMetrics">
+    <mat-card-header>
+      <mat-card-title>Saldo Total</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="metrics-grid">
+        <div class="metric">
+          <div class="metric-label">Investido</div>
+          <div class="metric-value">{{ formatCurrency(overallMetrics.totalInvested) }}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Saldo Atual</div>
+          <div class="metric-value">{{ formatCurrency(overallMetrics.currentBalance) }}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Rentabilidade</div>
+          <div class="metric-value" [class.positive]="overallMetrics.totalReturn >= 0" [class.negative]="overallMetrics.totalReturn < 0">
+            {{ formatCurrency(overallMetrics.totalReturn) }}
+            ({{ formatPercentage(overallMetrics.returnPercentage) }})
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Performance by Type Chart -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Rentabilidade por Tipo</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <!-- Period Selector -->
+      <div class="period-selector">
+        <mat-button-toggle-group [(ngModel)]="selectedPeriod" (change)="onPeriodChange()">
+          <mat-button-toggle value="current_year">Ano Corrente</mat-button-toggle>
+          <mat-button-toggle value="previous_year">Ano Anterior</mat-button-toggle>
+          <mat-button-toggle value="last_5_years">Últimos 5 Anos</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <!-- Chart -->
+      <div class="chart-container" *ngIf="typeMetrics.length > 0; else noData">
+        <canvas #chartCanvas></canvas>
+      </div>
+
+      <ng-template #noData>
+        <p class="no-data">Nenhum investimento cadastrado ainda.</p>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Recent Transactions -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Movimentações Recentes (Ano Corrente)</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="recentTransactions" *ngIf="recentTransactions.length > 0; else noTransactions">
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Data</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.date | appDate }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="investment">
+          <th mat-header-cell *matHeaderCellDef>Investimento</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.investmentName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let transaction">
+            <mat-chip [color]="getTransactionTypeColor(transaction.type)" highlighted>
+              {{ getTransactionTypeLabel(transaction.type) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Valor</th>
+          <td mat-cell *matCellDef="let transaction">{{ formatCurrency(transaction.amount) }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <ng-template #noTransactions>
+        <p class="no-data">Nenhuma movimentação no ano corrente.</p>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Quick Actions -->
+  <div class="actions">
+    <button mat-raised-button color="primary" routerLink="/investments">
+      <mat-icon>trending_up</mat-icon>
+      Ver Investimentos
+    </button>
+    <button mat-raised-button color="accent" routerLink="/settings">
+      <mat-icon>settings</mat-icon>
+      Configurações
+    </button>
+  </div>
+</div>

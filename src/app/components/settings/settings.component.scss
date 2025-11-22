@@ -1,0 +1,123 @@
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+mat-card {
+  margin-bottom: 20px;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.description.warning {
+  color: #f57c00;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff3e0;
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: 0;
+
+  mat-icon {
+    color: #f57c00;
+  }
+}
+
+.currency-select {
+  width: 100%;
+  max-width: 300px;
+}
+
+.backup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.password-field {
+  width: 100%;
+  max-width: 400px;
+}
+
+.file-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.file-input-container button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.institution-form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+
+.institution-name {
+  flex: 2;
+}
+
+.institution-type {
+  flex: 1;
+}
+
+.institutions-table {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.no-data {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .currency-select,
+  .password-field {
+    max-width: 100%;
+  }
+
+  .backup-form button {
+    width: 100%;
+  }
+
+  .institution-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .institution-name,
+  .institution-type {
+    flex: 1;
+    width: 100%;
+  }
+}

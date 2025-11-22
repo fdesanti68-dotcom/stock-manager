@@ -1,0 +1,84 @@
+<div class="investments-container">
+  <div class="header">
+    <h1>Investimentos</h1>
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>add</mat-icon>
+      Novo Investimento
+    </button>
+  </div>
+
+  <mat-card *ngIf="investments.length > 0; else noInvestments">
+    <mat-card-content>
+      <table mat-table [dataSource]="investments" class="investments-table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Nome</th>
+          <td mat-cell *matCellDef="let investment">
+            <a [routerLink]="['/investment', investment.id]" class="investment-link">
+              {{ investment.name }}
+            </a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="institution">
+          <th mat-header-cell *matHeaderCellDef>Banco/Corretora</th>
+          <td mat-cell *matCellDef="let investment">{{ getInstitutionName(investment.institutionId) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let investment">{{ getTypeLabel(investment.type) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="currentBalance">
+          <th mat-header-cell *matHeaderCellDef>Saldo Atual</th>
+          <td mat-cell *matCellDef="let investment">
+            {{ formatCurrency(getInvestmentBalanceInBaseCurrency(investment)) }}
+            <span class="currency-secondary" *ngIf="investment.currency !== baseCurrency">
+              ({{ formatCurrency(getInvestmentBalance(investment), investment.currency) }})
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="profitability">
+          <th mat-header-cell *matHeaderCellDef>Rentabilidade</th>
+          <td mat-cell *matCellDef="let investment">
+            <span [class.positive]="getInvestmentProfitability(investment) >= 0"
+                  [class.negative]="getInvestmentProfitability(investment) < 0">
+              {{ formatPercentage(getInvestmentProfitability(investment)) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Ações</th>
+          <td mat-cell *matCellDef="let investment">
+            <button mat-icon-button (click)="openEditDialog(investment)" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteInvestment(investment)" matTooltip="Excluir">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+
+  <ng-template #noInvestments>
+    <mat-card>
+      <mat-card-content>
+        <div class="no-data">
+          <mat-icon>trending_up</mat-icon>
+          <p>Nenhum investimento cadastrado ainda.</p>
+          <button mat-raised-button color="primary" (click)="openAddDialog()">
+            <mat-icon>add</mat-icon>
+            Adicionar Primeiro Investimento
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-template>
+</div>

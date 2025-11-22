@@ -1,0 +1,191 @@
+<div class="detail-container" *ngIf="investment">
+  <div class="header">
+    <div class="header-left">
+      <button mat-icon-button routerLink="/investments">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <h1>{{ investment.name }}</h1>
+        <p class="subtitle">{{ getTypeLabel() }} • {{ investment.currency }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Card -->
+  <mat-card *ngIf="investment.comments">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>comment</mat-icon>
+        Comentários
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="comments-text">{{ investment.comments }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Performance Metrics -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Desempenho</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="metrics-grid">
+        <div class="metric">
+          <div class="metric-label">Total Investido</div>
+          <div class="metric-value">{{ formatCurrency(getTotalInvested()) }}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Saldo Atual</div>
+          <div class="metric-value">{{ formatCurrency(getCurrentBalance()) }}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Rentabilidade</div>
+          <div class="metric-value" [class.positive]="getTotalReturn() >= 0" [class.negative]="getTotalReturn() < 0">
+            {{ formatCurrency(getTotalReturn()) }}
+            ({{ formatPercentage(getProfitability()) }})
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tabs for Transactions and Chart -->
+  <mat-tab-group>
+    <mat-tab label="Movimentações">
+      <!-- Add Transaction Form -->
+      <mat-card class="transaction-form">
+        <mat-card-header>
+          <mat-card-title>Nova Movimentação</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form class="form-grid">
+            <mat-form-field appearance="fill">
+              <mat-label>Data</mat-label>
+              <input matInput [matDatepicker]="picker" [(ngModel)]="newTransaction.date" name="date">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Tipo</mat-label>
+              <mat-select [(ngModel)]="newTransaction.type" name="type">
+                <mat-option [value]="TransactionType.DEPOSIT">Aporte</mat-option>
+                <mat-option [value]="TransactionType.WITHDRAWAL">Saque</mat-option>
+                <mat-option [value]="TransactionType.BALANCE_UPDATE">Atualização de Saldo</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" *ngIf="newTransaction.type !== TransactionType.BALANCE_UPDATE">
+              <mat-label>Valor</mat-label>
+              <input matInput type="number" [(ngModel)]="newTransaction.amount" name="amount" step="0.01">
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" *ngIf="newTransaction.type === TransactionType.BALANCE_UPDATE">
+              <mat-label>Novo Saldo</mat-label>
+              <input matInput type="number" [(ngModel)]="newTransaction.balance" name="balance" step="0.01">
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" (click)="addTransaction()" class="add-btn">
+              <mat-icon>add</mat-icon>
+              Adicionar
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Transactions Table -->
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Histórico</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <table mat-table [dataSource]="transactions" *ngIf="transactions.length > 0; else noTransactions">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Data</th>
+              <td mat-cell *matCellDef="let transaction">{{ transaction.date | appDate }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let transaction">
+                <mat-chip [color]="getTransactionTypeColor(transaction.type)" highlighted>
+                  {{ getTransactionTypeLabel(transaction.type) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Valor</th>
+              <td mat-cell *matCellDef="let transaction">
+                <span *ngIf="transaction.type !== TransactionType.BALANCE_UPDATE">
+                  {{ formatCurrency(transaction.amount) }}
+                </span>
+                <span *ngIf="transaction.type === TransactionType.BALANCE_UPDATE">-</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="balance">
+              <th mat-header-cell *matHeaderCellDef>Saldo</th>
+              <td mat-cell *matCellDef="let transaction">{{ formatCurrency(getRunningBalance(transaction)) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
+              <td mat-cell *matCellDef="let transaction">
+                <button mat-icon-button color="warn" (click)="deleteTransaction(transaction)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+
+          <ng-template #noTransactions>
+            <p class="no-data">Nenhuma movimentação registrada.</p>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Gráfico">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Rentabilidade ao Longo do Tempo</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- Period Selector -->
+          <div class="chart-controls">
+            <div class="period-selector">
+              <mat-button-toggle-group [(ngModel)]="selectedChartPeriod" (change)="onChartPeriodChange()">
+                <mat-button-toggle value="current_year">Ano Corrente</mat-button-toggle>
+                <mat-button-toggle value="previous_year">Ano Anterior</mat-button-toggle>
+                <mat-button-toggle value="last_5_years">Últimos 5 Anos</mat-button-toggle>
+                <mat-button-toggle value="since_start">Desde o Início</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+
+            <!-- Benchmark Comparisons -->
+            <div class="benchmark-selector">
+              <mat-checkbox [(ngModel)]="showCDI" (change)="onBenchmarkChange()">CDI</mat-checkbox>
+              <mat-checkbox [(ngModel)]="showIBOVESPA" (change)="onBenchmarkChange()">IBOVESPA</mat-checkbox>
+              <mat-checkbox [(ngModel)]="showDOLLAR" (change)="onBenchmarkChange()">Dólar</mat-checkbox>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="chart-container">
+            <canvas #performanceChart></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<div *ngIf="!investment" class="no-data">
+  <p>Investimento não encontrado.</p>
+  <button mat-raised-button color="primary" routerLink="/investments">Voltar</button>
+</div>
